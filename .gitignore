@@ -12,3 +12,11 @@ wheels/
 # Environment variables (secrets)
 .env
 .env.*
+!.env.sample
+
+# IDE
+.idea/
+.vscode/
+
+# Sessions
+sessions/

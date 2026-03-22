@@ -34,14 +34,14 @@ uv sync
 ## 실행
 
 ```bash
-# 에이전트 시작
-uv run ollaagent
+# 에이전트 시작 (기본 모델: qwen3-coder-next:latest)
+ollaagent
 
 # 모델 지정
-uv run ollaagent --model qwen2.5-coder:7b
+ollaagent --model qwen2.5-coder:7b
 
 # 원격 ollama 호스트 지정
-uv run ollaagent --host https://your-ollama.example.com
+ollaagent --host https://your-ollama.example.com
 ```
 
 ## 내장 명령어
@@ -71,12 +71,12 @@ uv run ollaagent --host https://your-ollama.example.com
 
 ## 환경 설정
 
-프로젝트 루트에 `.env` 파일을 생성합니다:
+`.env` 파일을 `ollaagent`를 실행하는 디렉토리에 생성합니다:
 
 ```env
 OLLAMA_HOST=http://localhost:11434
-CF_CLIENT_ID=
-CF_CLIENT_SECRET=
+CF_ACCESS_CLIENT_ID=
+CF_ACCESS_CLIENT_SECRET=
 ```
 
 ## 프로젝트 구조

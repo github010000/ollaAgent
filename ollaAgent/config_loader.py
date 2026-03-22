@@ -2,8 +2,9 @@ from pathlib import Path
 from typing import Any
 
 import yaml
-from ollaAgent.permissions import DEFAULT_DENY_PATTERNS, PermissionMode
 from pydantic import BaseModel
+
+from ollaAgent.permissions import DEFAULT_DENY_PATTERNS, PermissionMode
 
 # ──────────────────────────────────────────
 # Config 파일 경로 정의
@@ -34,6 +35,9 @@ class AgentConfig(BaseModel):
     max_iterations: int = 10
     deny_patterns: list[str] = DEFAULT_DENY_PATTERNS
     agents_md_path: str = DEFAULT_AGENTS_MD
+    ollama_host: str = "http://localhost:11434"
+    cf_access_client_id: str = ""
+    cf_access_client_secret: str = ""
 
 
 # ──────────────────────────────────────────
@@ -67,6 +71,9 @@ def _ensure_global_config(path: Path) -> None:
         "max_iterations": default.max_iterations,
         "deny_patterns": default.deny_patterns,
         "agents_md_path": default.agents_md_path,
+        "ollama_host": default.ollama_host,
+        "cf_access_client_id": default.cf_access_client_id,
+        "cf_access_client_secret": default.cf_access_client_secret,
     }
     with path.open("w", encoding="utf-8") as fh:
         yaml.dump(data, fh, allow_unicode=True, default_flow_style=False)

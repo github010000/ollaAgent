@@ -34,14 +34,14 @@ uv sync
 ## Usage
 
 ```bash
-# Start the agent
-uv run ollaagent
+# Start the agent (default model: qwen3-coder-next:latest)
+ollaagent
 
 # With a specific model
-uv run ollaagent --model qwen2.5-coder:7b
+ollaagent --model qwen2.5-coder:7b
 
 # With a remote ollama host
-uv run ollaagent --host https://your-ollama.example.com
+ollaagent --host https://your-ollama.example.com
 ```
 
 ## Built-in Commands
@@ -75,8 +75,8 @@ Create a `.env` file in the project root:
 
 ```env
 OLLAMA_HOST=http://localhost:11434
-CF_CLIENT_ID=
-CF_CLIENT_SECRET=
+CF_ACCESS_CLIENT_ID=
+CF_ACCESS_CLIENT_SECRET=
 ```
 
 ## Project Structure

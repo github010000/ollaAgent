@@ -8,16 +8,17 @@ from functools import partial
 from pathlib import Path
 from typing import Any, NamedTuple
 
-from ollaAgent.config_loader import build_system_prompt, load_config
 from dotenv import load_dotenv
-from ollaAgent.memory import SESSION_DIR, SessionMemory, save_session
 from ollama import Client
-from ollaAgent.permissions import PermissionConfig
-from ollaAgent.plan_mode import run_plan
 from rich.console import Console
 from rich.live import Live
 from rich.markdown import Markdown
 from rich.panel import Panel
+
+from ollaAgent.config_loader import build_system_prompt, load_config
+from ollaAgent.memory import SESSION_DIR, SessionMemory, save_session
+from ollaAgent.permissions import PermissionConfig
+from ollaAgent.plan_mode import run_plan
 from ollaAgent.subagent import SubagentTask, run_subagents
 from ollaAgent.tool_bash import tool_bash
 
@@ -644,9 +645,11 @@ def main() -> None:
         f"threshold={agent_config.token_threshold:,}[/]"
     )
     conn = ConnectionInfo(
-        host="https://ollama.nabee.ai.kr",
-        cf_client_id=os.getenv("CF_ACCESS_CLIENT_ID", ""),
-        cf_client_secret=os.getenv("CF_ACCESS_CLIENT_SECRET", ""),
+        host=os.getenv("OLLAMA_HOST") or agent_config.ollama_host,
+        cf_client_id=os.getenv("CF_ACCESS_CLIENT_ID")
+        or agent_config.cf_access_client_id,
+        cf_client_secret=os.getenv("CF_ACCESS_CLIENT_SECRET")
+        or agent_config.cf_access_client_secret,
     )
     client = Client(
         host=conn.host,
