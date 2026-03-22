@@ -94,6 +94,14 @@ UV_PUBLISH_TOKEN=$(grep PYPI_TOKEN .env | cut -d= -f2) uv publish
 
 ---
 
+## Core Constitution & References
+
+- **범용 규칙**: @AGENT.md
+- **상시 준수 헌법**: @.agentic_python/guidelines.md
+  특히 Section 8. The 30 Commandments을 모든 코드 생성/수정 시 자동 체크 & 위반 시 스스로 교정
+- **리뷰 페르소나**: @.agentic_python/reviewer_role.md
+  코드 변경 후 또는 /review 시 JSON 채점 형식 준수
+
 ## Conventions
 
 - **호칭**: 사용자를 '대장'으로 인식
