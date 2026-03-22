@@ -354,7 +354,7 @@ def trim_by_tokens(
 
 def _accumulate_tool_calls(msg: dict[str, Any], accumulated: dict[int, dict]) -> None:
     """스트림 chunk에서 tool_calls를 누적한다 (분산 전송 대응)."""
-    for tc in msg.get("tool_calls", []):
+    for tc in msg.get("tool_calls") or []:
         idx = tc.get("index", len(accumulated))
         if idx not in accumulated:
             accumulated[idx] = {"name": "", "arguments": ""}
