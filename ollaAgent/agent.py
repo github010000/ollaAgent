@@ -15,7 +15,7 @@ try:
 except ImportError:
     pass  # Windows 환경에서는 무시
 
-__version__ = "0.1.6"
+__version__ = "0.1.7"
 
 from dotenv import load_dotenv
 from ollama import Client
@@ -637,6 +637,22 @@ def _handle_subagent_command(
     return True
 
 
+def _read_user_input() -> str | None:
+    """터미널에서 사용자 입력을 읽는다.
+
+    - 줄 끝 '\\' 입력 시 다음 줄 이어쓰기 (멀티라인)
+    - EOFError / KeyboardInterrupt 시 None 반환 (종료 신호)
+    """
+    try:
+        lines = [input("\nYou: ")]
+        while lines[-1].endswith("\\"):
+            lines[-1] = lines[-1][:-1]
+            lines.append(input("... "))
+        return "\n".join(lines).strip()
+    except (EOFError, KeyboardInterrupt):
+        return None
+
+
 def _auto_save_session(messages: list[dict]) -> None:
     """대화 히스토리를 .agents/sessions/ 에 타임스탬프 파일명으로 저장한다."""
     ts = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -690,13 +706,14 @@ def main() -> None:
     messages: list[dict] = [{"role": "system", "content": base_prompt}]
 
     while True:
-        try:
-            user = input("\nYou: ")
-        except (EOFError, KeyboardInterrupt):
+        user = _read_user_input()
+        if user is None:
             console.print("\n[dim]Bye![/]")
             _auto_save_session(messages)
             break
-        if user.strip().lower() in ["exit", "quit", "/exit", "/quit"]:
+        if not user:
+            continue
+        if user.lower() in ["exit", "quit", "/exit", "/quit"]:
             _auto_save_session(messages)
             break
         if _handle_memory_command(user, memory):

@@ -7,6 +7,20 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ---
 
+## [0.1.7] - 2026-03-22
+
+### Fixed
+- 빈 입력 시 LLM 호출 방지 (`strip()` 후 빈 문자열 skip)
+- 멀티라인 입력 지원 — 줄 끝 `\` 입력 시 다음 줄 이어쓰기 (`... ` 프롬프트)
+
+### Refactored
+- 입력 처리 로직을 `_read_user_input()` 함수로 추출 (테스트 가능)
+
+### Tests
+- `TestReadUserInput` 8종 추가 (단일/빈/공백/멀티라인/EOF/Ctrl+C)
+
+---
+
 ## [0.1.6] - 2026-03-22
 
 ### Fixed

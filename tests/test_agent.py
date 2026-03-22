@@ -4,7 +4,7 @@ import pytest
 
 import ollaAgent.agent as agent
 from ollaAgent.agent import (_is_model_available, _parse_subagent_input,
-                             build_dispatch, execute_tool,
+                             _read_user_input, build_dispatch, execute_tool,
                              list_available_models, run_agentic_loop,
                              trim_by_tokens, trim_messages)
 from ollaAgent.permissions import PermissionConfig, PermissionMode
@@ -346,6 +346,61 @@ class TestAgenticLoop:
         messages = [{"role": "user", "content": "테스트"}]
         result = run_agentic_loop(messages, mock_client, _TEST_DISPATCH)
         assert "정상 응답." in result
+
+
+# ──────────────────────────────────────────
+# Unit Tests: _read_user_input
+# ──────────────────────────────────────────
+
+
+class TestReadUserInput:
+
+    def test_single_line_input(self):
+        """일반 단일 줄 입력 반환"""
+        with patch("builtins.input", return_value="안녕하세요"):
+            assert _read_user_input() == "안녕하세요"
+
+    def test_empty_input_returns_empty_string(self):
+        """빈 입력은 빈 문자열 반환 (호출부에서 skip)"""
+        with patch("builtins.input", return_value=""):
+            assert _read_user_input() == ""
+
+    def test_whitespace_only_returns_empty_string(self):
+        """공백만 입력하면 strip 후 빈 문자열 반환"""
+        with patch("builtins.input", return_value="   "):
+            assert _read_user_input() == ""
+
+    def test_multiline_with_backslash_continuation(self):
+        """줄 끝 \\ 입력 시 다음 줄과 합쳐서 반환"""
+        inputs = iter(["첫째 줄\\", "둘째 줄"])
+        with patch("builtins.input", side_effect=inputs):
+            result = _read_user_input()
+        assert result == "첫째 줄\n둘째 줄"
+
+    def test_multiline_three_lines(self):
+        """3줄 연속 이어쓰기"""
+        inputs = iter(["line1\\", "line2\\", "line3"])
+        with patch("builtins.input", side_effect=inputs):
+            result = _read_user_input()
+        assert result == "line1\nline2\nline3"
+
+    def test_eof_returns_none(self):
+        """EOFError(Ctrl+D) 시 None 반환"""
+        with patch("builtins.input", side_effect=EOFError):
+            assert _read_user_input() is None
+
+    def test_keyboard_interrupt_returns_none(self):
+        """KeyboardInterrupt(Ctrl+C) 시 None 반환"""
+        with patch("builtins.input", side_effect=KeyboardInterrupt):
+            assert _read_user_input() is None
+
+    def test_backslash_stripped_from_continuation_line(self):
+        """이어쓰기 줄의 끝 \\ 는 결과에 포함되지 않음"""
+        inputs = iter(["hello\\", "world"])
+        with patch("builtins.input", side_effect=inputs):
+            result = _read_user_input()
+        assert "\\" not in result
+        assert result == "hello\nworld"
 
 
 # ──────────────────────────────────────────
