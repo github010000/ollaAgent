@@ -2,6 +2,9 @@
 
 A local LLM agent powered by [ollama](https://ollama.com) — with persistent memory, plan mode, and parallel subagents.
 
+[![Python](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 ## Features
 
 | Feature | Description |
@@ -23,7 +26,7 @@ A local LLM agent powered by [ollama](https://ollama.com) — with persistent me
 ## Installation
 
 ```bash
-git clone https://github.com/yourname/ollaAgent
+git clone https://github.com/github010000/ollaAgent
 cd ollaAgent
 uv sync
 ```
@@ -55,19 +58,20 @@ uv run ollaagent --host https://your-ollama.example.com
 
 ## Subagent Usage
 
+Single model across all tasks:
 ```
 /subagent
 > --model llama3:8b task one | task two | task three
 ```
 
-Assign a model per task:
+Per-task model assignment:
 ```
 > @qwen2.5-coder:7b write a sorting algorithm | @llama3:8b explain it
 ```
 
 ## Configuration
 
-Copy `.env.example` to `.env` and set:
+Create a `.env` file in the project root:
 
 ```env
 OLLAMA_HOST=http://localhost:11434
@@ -97,4 +101,4 @@ uv run pytest
 
 ## License
 
-MIT
+MIT — see [LICENSE](LICENSE) for details.
