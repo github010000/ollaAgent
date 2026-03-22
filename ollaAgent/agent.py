@@ -358,7 +358,7 @@ def _accumulate_tool_calls(msg: dict[str, Any], accumulated: dict[int, dict]) ->
         idx = tc.get("index", len(accumulated))
         if idx not in accumulated:
             accumulated[idx] = {"name": "", "arguments": ""}
-        fn = tc.get("function", {})
+        fn = tc.get("function") or {}
         accumulated[idx]["name"] += fn.get("name", "")
         raw_args = fn.get("arguments", "")
         if isinstance(raw_args, dict):
@@ -403,11 +403,11 @@ def _stream_response(stream: Any) -> tuple[str, str, dict[int, dict], int]:
 
     with Live(console=console, refresh_per_second=10) as live:
         for chunk in stream:
-            msg = chunk.get("message", {})
-            thinking = msg.get("thinking", "")
+            msg = chunk.get("message") or {}
+            thinking = msg.get("thinking") or ""
             if thinking:
                 thinking_content += thinking
-            content = msg.get("content", "")
+            content = msg.get("content") or ""
             if content:
                 assistant_content += content
                 live.update(Markdown(assistant_content))

@@ -1,7 +1,9 @@
 import json
 
 import pytest
-from ollaAgent.memory import MemoryEntry, SessionMemory, load_session, save_session
+
+from ollaAgent.memory import (MemoryEntry, SessionMemory, load_session,
+                              save_session)
 
 # ──────────────────────────────────────────
 # Unit Tests: MemoryEntry
@@ -119,6 +121,13 @@ class TestSessionMemoryPersistence:
         mem = SessionMemory(path=path)
         assert mem.all() == []
 
+    def test_null_entries_key_gives_empty(self, tmp_path):
+        """JSON에 entries: null 포함 시 빈 리스트로 처리"""
+        path = tmp_path / "null_entries.json"
+        path.write_text(json.dumps({"entries": None}))
+        mem = SessionMemory(path=path)
+        assert mem.all() == []
+
 
 class TestSessionMemoryContextString:
 
@@ -171,6 +180,13 @@ class TestSaveLoadSession:
     def test_load_invalid_json_returns_empty(self, tmp_path):
         path = tmp_path / "bad.json"
         path.write_text("not json at all")
+        result = load_session(path)
+        assert result == []
+
+    def test_load_null_messages_key_returns_empty(self, tmp_path):
+        """JSON에 messages: null 포함 시 빈 리스트 반환"""
+        path = tmp_path / "null_messages.json"
+        path.write_text(json.dumps({"messages": None}))
         result = load_session(path)
         assert result == []
 

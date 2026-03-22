@@ -49,7 +49,7 @@ class SessionMemory:
         try:
             with self._path.open(encoding="utf-8") as fh:
                 data = json.load(fh)
-            self._entries = [MemoryEntry(**e) for e in data.get("entries", [])]
+            self._entries = [MemoryEntry(**e) for e in (data.get("entries") or [])]
         except (json.JSONDecodeError, KeyError, ValueError):
             self._entries = []
 
@@ -125,6 +125,6 @@ def load_session(path: Path) -> list[dict]:
     try:
         with path.open(encoding="utf-8") as fh:
             data = json.load(fh)
-        return data.get("messages", [])
+        return data.get("messages") or []
     except (json.JSONDecodeError, KeyError):
         return []

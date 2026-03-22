@@ -1,10 +1,12 @@
 from unittest.mock import MagicMock, patch
 
-import ollaAgent.agent as agent
 import pytest
+
+import ollaAgent.agent as agent
 from ollaAgent.agent import (_is_model_available, _parse_subagent_input,
-                        build_dispatch, execute_tool, list_available_models,
-                        run_agentic_loop, trim_by_tokens, trim_messages)
+                             build_dispatch, execute_tool,
+                             list_available_models, run_agentic_loop,
+                             trim_by_tokens, trim_messages)
 from ollaAgent.permissions import PermissionConfig, PermissionMode
 
 _TEST_DISPATCH = build_dispatch(PermissionConfig(mode=PermissionMode.AUTO))
@@ -169,14 +171,28 @@ class TestTrimMessages:
 
 
 def _make_chunk(
-    content="", tool_calls=None, thinking="", done=False, prompt_eval_count=0
+    content="",
+    tool_calls=None,
+    thinking="",
+    done=False,
+    prompt_eval_count=0,
+    null_tool_calls=False,
+    null_message=False,
+    null_content=False,
+    null_thinking=False,
 ):
+    """테스트용 stream chunk 생성.
+
+    null_* 플래그: 키는 존재하지만 값이 null인 실제 API 응답 재현용.
+    """
+    if null_message:
+        return {"message": None}
     msg = {}
-    if content:
-        msg["content"] = content
-    if thinking:
-        msg["thinking"] = thinking
-    if tool_calls:
+    msg["content"] = None if null_content else (content or None)
+    msg["thinking"] = None if null_thinking else (thinking or None)
+    if null_tool_calls:
+        msg["tool_calls"] = None  # 실제 API: "tool_calls": null
+    elif tool_calls:
         msg["tool_calls"] = tool_calls
     chunk = {"message": msg}
     if done:
@@ -294,6 +310,42 @@ class TestAgenticLoop:
         result = run_agentic_loop(messages, mock_client, _TEST_DISPATCH)
         assert "최종 답변입니다." in result
         assert "내부적으로 생각 중..." not in result
+
+    def test_null_tool_calls_in_stream_does_not_raise(self):
+        """실제 API가 tool_calls: null 반환 시 TypeError 없이 정상 처리"""
+        mock_client = MagicMock()
+        mock_client.chat.return_value = _make_stream(
+            _make_chunk(null_tool_calls=True),
+            _make_chunk(content="응답입니다."),
+        )
+
+        messages = [{"role": "user", "content": "안녕"}]
+        result = run_agentic_loop(messages, mock_client, _TEST_DISPATCH)
+        assert "응답입니다." in result
+
+    def test_null_message_in_stream_does_not_raise(self):
+        """실제 API가 message: null 반환 시 정상 처리"""
+        mock_client = MagicMock()
+        mock_client.chat.return_value = _make_stream(
+            _make_chunk(null_message=True),
+            _make_chunk(content="응답입니다."),
+        )
+
+        messages = [{"role": "user", "content": "안녕"}]
+        result = run_agentic_loop(messages, mock_client, _TEST_DISPATCH)
+        assert "응답입니다." in result
+
+    def test_null_content_and_thinking_in_stream_does_not_raise(self):
+        """content, thinking이 null인 chunk 정상 처리"""
+        mock_client = MagicMock()
+        mock_client.chat.return_value = _make_stream(
+            _make_chunk(null_content=True, null_thinking=True),
+            _make_chunk(content="정상 응답."),
+        )
+
+        messages = [{"role": "user", "content": "테스트"}]
+        result = run_agentic_loop(messages, mock_client, _TEST_DISPATCH)
+        assert "정상 응답." in result
 
 
 # ──────────────────────────────────────────
