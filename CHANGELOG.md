@@ -7,6 +7,15 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ---
 
+## [0.1.4] - 2026-03-22
+
+### Added
+- `--version` / `-v` 플래그 지원 (`ollaagent --version`)
+- `--model` / `-m` CLI 인수 지원 (config 기본값 오버라이드)
+- `--host` CLI 인수 지원 (env/config보다 우선)
+
+---
+
 ## [0.1.3] - 2026-03-22
 
 ### Fixed

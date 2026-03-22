@@ -1,3 +1,4 @@
+import argparse
 import glob as glob_module
 import json
 import os
@@ -7,6 +8,8 @@ from datetime import datetime
 from functools import partial
 from pathlib import Path
 from typing import Any, NamedTuple
+
+__version__ = "0.1.4"
 
 from dotenv import load_dotenv
 from ollama import Client
@@ -638,14 +641,27 @@ def _auto_save_session(messages: list[dict]) -> None:
 
 def main() -> None:
     """대화형 agentic loop 진입점."""
+    parser = argparse.ArgumentParser(prog="ollaagent", add_help=False)
+    parser.add_argument("--version", "-v", action="store_true", help="버전 출력")
+    parser.add_argument("--model", "-m", type=str, default=None)
+    parser.add_argument("--host", type=str, default=None)
+    args, _ = parser.parse_known_args()
+
+    if args.version:
+        print(f"ollaagent {__version__}")
+        return
+
     agent_config = load_config()
     console.print(
         f"[dim][Config] model={agent_config.model} | "
         f"mode={agent_config.permission_mode.value} | "
         f"threshold={agent_config.token_threshold:,}[/]"
     )
+    if args.model:
+        agent_config.model = args.model
+
     conn = ConnectionInfo(
-        host=os.getenv("OLLAMA_HOST") or agent_config.ollama_host,
+        host=args.host or os.getenv("OLLAMA_HOST") or agent_config.ollama_host,
         cf_client_id=os.getenv("CF_ACCESS_CLIENT_ID")
         or agent_config.cf_access_client_id,
         cf_client_secret=os.getenv("CF_ACCESS_CLIENT_SECRET")
