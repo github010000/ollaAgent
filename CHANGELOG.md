@@ -7,6 +7,16 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ---
 
+## [0.1.6] - 2026-03-22
+
+### Fixed
+- `/exit`, `/quit` 커맨드가 LLM으로 전달되던 문제 — exit 매칭에 `/exit`, `/quit` 추가
+- `Ctrl+C` (`KeyboardInterrupt`) 시 traceback 출력 → 세션 저장 후 정상 종료
+- `Ctrl+D` (EOF) 입력 시 비정상 종료 → 정상 종료 처리
+- 한글 입력 중 삭제/수정 시 글자 깨짐 — `readline` import로 터미널 편집 정상화
+
+---
+
 ## [0.1.4] - 2026-03-22
 
 ### Added

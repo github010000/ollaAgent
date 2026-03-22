@@ -1,6 +1,6 @@
 [project]
 name = "ollaagent"
-version = "0.1.4"
+version = "0.1.6"
 description = "Local LLM agent powered by ollama — memory, plan mode, subagents"
 readme = "README.md"
 requires-python = ">=3.11"

@@ -4,12 +4,18 @@ import json
 import os
 import re
 import subprocess
+import sys
 from datetime import datetime
 from functools import partial
 from pathlib import Path
 from typing import Any, NamedTuple
 
-__version__ = "0.1.4"
+try:
+    import readline  # noqa: F401 — enables arrow keys, backspace, history on macOS/Linux
+except ImportError:
+    pass  # Windows 환경에서는 무시
+
+__version__ = "0.1.6"
 
 from dotenv import load_dotenv
 from ollama import Client
@@ -684,8 +690,13 @@ def main() -> None:
     messages: list[dict] = [{"role": "system", "content": base_prompt}]
 
     while True:
-        user = input("\nYou: ")
-        if user.lower() in ["exit", "quit"]:
+        try:
+            user = input("\nYou: ")
+        except (EOFError, KeyboardInterrupt):
+            console.print("\n[dim]Bye![/]")
+            _auto_save_session(messages)
+            break
+        if user.strip().lower() in ["exit", "quit", "/exit", "/quit"]:
             _auto_save_session(messages)
             break
         if _handle_memory_command(user, memory):
