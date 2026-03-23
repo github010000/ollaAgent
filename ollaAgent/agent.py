@@ -15,7 +15,7 @@ try:
 except ImportError:
     pass  # Windows 환경에서는 무시
 
-__version__ = "0.1.8"
+__version__ = "0.1.9"
 
 from dotenv import load_dotenv
 from ollama import Client
@@ -411,7 +411,7 @@ def stream_response(stream: Any) -> tuple[str, str, dict[int, dict], int]:
     accumulated_tool_calls: dict[int, dict] = {}
     prompt_eval_count: int = 0
 
-    with Live(console=console, auto_refresh=False) as live:
+    with Live(console=console, auto_refresh=False, transient=True) as live:
         for chunk in stream:
             msg = chunk.get("message") or {}
             thinking = msg.get("thinking") or ""

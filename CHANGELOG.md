@@ -7,6 +7,18 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ---
 
+## [0.1.9] - 2026-03-23
+
+### Fixed
+- 스트리밍 중 plain text와 Markdown이 이중 출력되던 문제 — `Live(transient=True)` 적용으로 스트림 종료 시 plain text 자동 삭제
+
+### Tests
+- `test_markdown_printed_once_after_stream` — Markdown 1회만 출력 검증
+- `test_markdown_not_printed_when_no_content` — content 없으면 Markdown 미출력 검증
+- `test_live_created_with_transient_true` — `transient=True` 설정 검증
+
+---
+
 ## [0.1.8] - 2026-03-23
 
 ### Fixed
