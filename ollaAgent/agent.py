@@ -15,7 +15,7 @@ try:
 except ImportError:
     pass  # Windows 환경에서는 무시
 
-__version__ = "0.2.0"
+__version__ = "0.2.1"
 
 from dotenv import load_dotenv
 from ollama import Client
@@ -25,7 +25,8 @@ from rich.markdown import Markdown
 from rich.panel import Panel
 
 from ollaAgent.config_loader import build_system_prompt, load_config
-from ollaAgent.memory import SESSION_DIR, SessionMemory, save_session
+from ollaAgent.memory import (SESSION_DIR, SessionMemory, save_session,
+                              save_session_md)
 from ollaAgent.permissions import PermissionConfig
 from ollaAgent.plan_mode import run_plan
 from ollaAgent.subagent import SubagentTask, run_subagents
@@ -655,11 +656,15 @@ def _read_user_input() -> str | None:
 
 
 def _auto_save_session(messages: list[dict]) -> None:
-    """대화 히스토리를 .agents/sessions/ 에 타임스탬프 파일명으로 저장한다."""
+    """대화 히스토리를 ~/.agents/sessions/ 에 타임스탬프 파일명으로 저장한다.
+
+    JSON (load_session용) + Markdown (사람이 읽기 위한 아카이브) 둘 다 저장한다.
+    """
     ts = datetime.now().strftime("%Y%m%d_%H%M%S")
     path = SESSION_DIR / f"{ts}.json"
     save_session(messages, path)
-    console.print(f"[dim][Session] 저장됨: {path}[/]")
+    save_session_md(messages, path)
+    console.print(f"[dim][Session] 저장됨: {path.with_suffix('.md')}[/]")
 
 
 def main() -> None:

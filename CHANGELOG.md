@@ -7,6 +7,21 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ---
 
+## [0.2.1] - 2026-03-23
+
+### Added
+- 세션 대화 내용 Markdown 아카이브 저장 — `/exit`, `Ctrl+C` 시 `.md` 파일 자동 생성
+- `save_session_md()` 신규 함수 (`memory.py`) — role별 `## role` 헤더로 가독성 확보
+- JSON 세션(`load_session` 용) + MD 아카이브 병행 저장
+
+### Changed
+- 세션/메모리 저장 경로 통일: `Path.cwd()` → `Path.home() / ".agents"` (어느 디렉토리에서 실행해도 동일 위치)
+
+### Tests
+- `TestSaveSessionMd` 6종 추가 — MD 생성/헤더/내용/빈콘텐츠skip/세션헤더/부모디렉토리
+
+---
+
 ## [0.2.0] - 2026-03-23
 
 ### Fixed

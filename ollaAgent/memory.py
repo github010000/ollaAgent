@@ -7,8 +7,8 @@ from pathlib import Path
 
 from pydantic import BaseModel, Field
 
-MEMORY_PATH = Path.cwd() / ".agents" / "memory.json"
-SESSION_DIR = Path.cwd() / ".agents" / "sessions"
+MEMORY_PATH = Path.home() / ".agents" / "memory.json"
+SESSION_DIR = Path.home() / ".agents" / "sessions"
 
 
 # ──────────────────────────────────────────
@@ -128,3 +128,25 @@ def load_session(path: Path) -> list[dict]:
         return data.get("messages") or []
     except (json.JSONDecodeError, KeyError):
         return []
+
+
+def save_session_md(messages: list[dict], path: Path) -> None:
+    """대화 히스토리를 Markdown 파일로 저장한다 (사람이 읽기 위한 아카이브).
+
+    JSON 세션과 동일한 타임스탬프 기반 파일명을 사용한다 (.json → .md).
+    """
+    saved_at = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
+    lines = [f"# Session — {saved_at}", ""]
+    for msg in messages:
+        role = msg.get("role", "unknown")
+        content = msg.get("content", "")
+        if not content:
+            continue
+        lines.append(f"## {role}")
+        lines.append("")
+        lines.append(content)
+        lines.append("")
+    md_path = path.with_suffix(".md")
+    md_path.parent.mkdir(parents=True, exist_ok=True)
+    with md_path.open("w", encoding="utf-8") as fh:
+        fh.write("\n".join(lines))

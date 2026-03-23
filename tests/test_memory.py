@@ -3,7 +3,7 @@ import json
 import pytest
 
 from ollaAgent.memory import (MemoryEntry, SessionMemory, load_session,
-                              save_session)
+                              save_session, save_session_md)
 
 # ──────────────────────────────────────────
 # Unit Tests: MemoryEntry
@@ -194,6 +194,69 @@ class TestSaveLoadSession:
         path = tmp_path / "a" / "b" / "c" / "sess.json"
         save_session([{"role": "user", "content": "x"}], path)
         assert path.exists()
+
+    def test_saved_json_has_metadata(self, tmp_path):
+        path = tmp_path / "s.json"
+        save_session([{"role": "user", "content": "hi"}], path)
+        data = json.loads(path.read_text())
+        assert "version" in data
+        assert "saved_at" in data
+        assert "messages" in data
+
+
+# ──────────────────────────────────────────
+# Unit Tests: save_session_md
+# ──────────────────────────────────────────
+
+
+class TestSaveSessionMd:
+
+    def test_creates_md_file(self, tmp_path):
+        """JSON 경로를 주면 .md 파일이 생성된다."""
+        path = tmp_path / "s.json"
+        save_session_md([{"role": "user", "content": "안녕"}], path)
+        assert path.with_suffix(".md").exists()
+
+    def test_md_contains_role_headers(self, tmp_path):
+        """각 role이 ## 헤더로 포함된다."""
+        path = tmp_path / "s.json"
+        messages = [
+            {"role": "system", "content": "You are helpful."},
+            {"role": "user", "content": "질문입니다."},
+            {"role": "assistant", "content": "답변입니다."},
+        ]
+        save_session_md(messages, path)
+        md = path.with_suffix(".md").read_text(encoding="utf-8")
+        assert "## system" in md
+        assert "## user" in md
+        assert "## assistant" in md
+
+    def test_md_contains_content(self, tmp_path):
+        """메시지 내용이 Markdown에 포함된다."""
+        path = tmp_path / "s.json"
+        save_session_md([{"role": "user", "content": "테스트 내용"}], path)
+        md = path.with_suffix(".md").read_text(encoding="utf-8")
+        assert "테스트 내용" in md
+
+    def test_md_skips_empty_content(self, tmp_path):
+        """content가 빈 메시지는 Markdown에 포함되지 않는다."""
+        path = tmp_path / "s.json"
+        save_session_md([{"role": "assistant", "content": ""}], path)
+        md = path.with_suffix(".md").read_text(encoding="utf-8")
+        assert "## assistant" not in md
+
+    def test_md_has_session_header(self, tmp_path):
+        """Markdown 파일 첫 줄은 # Session — 으로 시작한다."""
+        path = tmp_path / "s.json"
+        save_session_md([{"role": "user", "content": "hi"}], path)
+        md = path.with_suffix(".md").read_text(encoding="utf-8")
+        assert md.startswith("# Session —")
+
+    def test_md_creates_parent_dirs(self, tmp_path):
+        """부모 디렉토리가 없어도 자동 생성된다."""
+        path = tmp_path / "deep" / "nested" / "s.json"
+        save_session_md([{"role": "user", "content": "x"}], path)
+        assert path.with_suffix(".md").exists()
 
     def test_saved_json_has_metadata(self, tmp_path):
         path = tmp_path / "s.json"
