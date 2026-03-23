@@ -7,6 +7,20 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ---
 
+## [0.1.8] - 2026-03-23
+
+### Fixed
+- 스트리밍 실시간성 개선 — `Live(auto_refresh=False)` + `live.refresh()` 매 chunk 즉시 출력
+- 스트림 완료 후 `Markdown` 최종 렌더링으로 가독성 확보
+
+### Refactored
+- `_stream_response` → `stream_response` (public 노출, 직접 테스트 가능)
+
+### Tests
+- `TestStreamResponse` 8종 추가 — content/thinking/tool_calls/token 반환값 정확성 검증
+
+---
+
 ## [0.1.7] - 2026-03-22
 
 ### Fixed

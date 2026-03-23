@@ -6,7 +6,7 @@ import ollaAgent.agent as agent
 from ollaAgent.agent import (_is_model_available, _parse_subagent_input,
                              _read_user_input, build_dispatch, execute_tool,
                              list_available_models, run_agentic_loop,
-                             trim_by_tokens, trim_messages)
+                             stream_response, trim_by_tokens, trim_messages)
 from ollaAgent.permissions import PermissionConfig, PermissionMode
 
 _TEST_DISPATCH = build_dispatch(PermissionConfig(mode=PermissionMode.AUTO))
@@ -346,6 +346,109 @@ class TestAgenticLoop:
         messages = [{"role": "user", "content": "테스트"}]
         result = run_agentic_loop(messages, mock_client, _TEST_DISPATCH)
         assert "정상 응답." in result
+
+
+# ──────────────────────────────────────────
+# Unit Tests: stream_response
+# ──────────────────────────────────────────
+
+
+class TestStreamResponse:
+
+    def _run(self, chunks: list) -> tuple:
+        """Live/console 렌더링을 패치하고 stream_response 반환값만 검증."""
+        with patch("ollaAgent.agent.Live"), patch("ollaAgent.agent.console"):
+            return stream_response(iter(chunks))
+
+    def test_content_accumulated(self):
+        """여러 chunk의 content가 누적되어 반환된다."""
+        chunks = [
+            {"message": {"content": "안녕"}, "done": False},
+            {"message": {"content": "하세요"}, "done": True, "prompt_eval_count": 50},
+        ]
+        content, thinking, tool_calls, token = self._run(chunks)
+        assert content == "안녕하세요"
+        assert thinking == ""
+        assert tool_calls == {}
+        assert token == 50
+
+    def test_thinking_accumulated(self):
+        """thinking 필드가 누적되고 content와 분리된다."""
+        chunks = [
+            {"message": {"thinking": "생각 중...", "content": ""}, "done": False},
+            {
+                "message": {"content": "결론입니다."},
+                "done": True,
+                "prompt_eval_count": 0,
+            },
+        ]
+        content, thinking, _, _ = self._run(chunks)
+        assert thinking == "생각 중..."
+        assert content == "결론입니다."
+
+    def test_empty_stream_returns_defaults(self):
+        """빈 스트림은 모두 기본값 반환."""
+        content, thinking, tool_calls, token = self._run([])
+        assert content == ""
+        assert thinking == ""
+        assert tool_calls == {}
+        assert token == 0
+
+    def test_token_count_from_done_chunk(self):
+        """prompt_eval_count는 done=True chunk에서만 캡처된다."""
+        chunks = [
+            {"message": {"content": "a"}, "done": False, "prompt_eval_count": 999},
+            {"message": {"content": "b"}, "done": True, "prompt_eval_count": 123},
+        ]
+        _, _, _, token = self._run(chunks)
+        assert token == 123
+
+    def test_null_prompt_eval_count_defaults_to_zero(self):
+        """prompt_eval_count가 null이면 0으로 처리된다."""
+        chunks = [
+            {"message": {"content": "hi"}, "done": True, "prompt_eval_count": None}
+        ]
+        _, _, _, token = self._run(chunks)
+        assert token == 0
+
+    def test_tool_calls_accumulated(self):
+        """tool_calls가 누적되어 반환된다."""
+        chunks = [
+            {
+                "message": {
+                    "content": "",
+                    "tool_calls": [
+                        {
+                            "index": 0,
+                            "function": {"name": "bash", "arguments": {"cmd": "ls"}},
+                        }
+                    ],
+                },
+                "done": True,
+                "prompt_eval_count": 0,
+            }
+        ]
+        _, _, tool_calls, _ = self._run(chunks)
+        assert 0 in tool_calls
+        assert tool_calls[0]["name"] == "bash"
+
+    def test_null_tool_calls_returns_empty(self):
+        """tool_calls: null 이면 빈 dict 반환."""
+        chunks = [
+            {
+                "message": {"content": "ok", "tool_calls": None},
+                "done": True,
+                "prompt_eval_count": 0,
+            }
+        ]
+        _, _, tool_calls, _ = self._run(chunks)
+        assert tool_calls == {}
+
+    def test_null_message_returns_empty_content(self):
+        """message: null 이면 content 빈 문자열 반환."""
+        chunks = [{"message": None, "done": True, "prompt_eval_count": 0}]
+        content, _, _, _ = self._run(chunks)
+        assert content == ""
 
 
 # ──────────────────────────────────────────
