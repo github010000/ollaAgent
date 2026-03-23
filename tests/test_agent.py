@@ -1,7 +1,6 @@
 from unittest.mock import MagicMock, patch
 
 import pytest
-from rich.markdown import Markdown
 
 import ollaAgent.agent as agent
 from ollaAgent.agent import (_is_model_available, _parse_subagent_input,
@@ -450,50 +449,6 @@ class TestStreamResponse:
         chunks = [{"message": None, "done": True, "prompt_eval_count": 0}]
         content, _, _, _ = self._run(chunks)
         assert content == ""
-
-    def test_markdown_printed_once_after_stream(self):
-        """스트림 완료 후 console.print(Markdown)이 정확히 1회 호출된다."""
-        chunks = [
-            {"message": {"content": "hello"}, "done": True, "prompt_eval_count": 0}
-        ]
-        with (
-            patch("ollaAgent.agent.Live"),
-            patch("ollaAgent.agent.console") as mock_console,
-        ):
-            stream_response(iter(chunks))
-
-        calls = mock_console.print.call_args_list
-        markdown_calls = [
-            c for c in calls if c.args and isinstance(c.args[0], Markdown)
-        ]
-        assert len(markdown_calls) == 1
-
-    def test_markdown_not_printed_when_no_content(self):
-        """content 없으면 console.print(Markdown)이 호출되지 않는다."""
-        chunks = [{"message": {"content": ""}, "done": True, "prompt_eval_count": 0}]
-        with (
-            patch("ollaAgent.agent.Live"),
-            patch("ollaAgent.agent.console") as mock_console,
-        ):
-            stream_response(iter(chunks))
-
-        calls = mock_console.print.call_args_list
-        markdown_calls = [
-            c for c in calls if c.args and isinstance(c.args[0], Markdown)
-        ]
-        assert len(markdown_calls) == 0
-
-    def test_live_created_with_transient_true(self):
-        """Live가 transient=True로 생성된다 (plain text가 화면에 남지 않음)."""
-        chunks = [{"message": {"content": "hi"}, "done": True, "prompt_eval_count": 0}]
-        with (
-            patch("ollaAgent.agent.Live") as mock_live,
-            patch("ollaAgent.agent.console"),
-        ):
-            stream_response(iter(chunks))
-
-        _, kwargs = mock_live.call_args
-        assert kwargs.get("transient") is True
 
 
 # ──────────────────────────────────────────

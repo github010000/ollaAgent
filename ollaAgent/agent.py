@@ -15,7 +15,7 @@ try:
 except ImportError:
     pass  # Windows 환경에서는 무시
 
-__version__ = "0.1.9"
+__version__ = "0.2.0"
 
 from dotenv import load_dotenv
 from ollama import Client
@@ -23,7 +23,6 @@ from rich.console import Console
 from rich.live import Live
 from rich.markdown import Markdown
 from rich.panel import Panel
-from rich.text import Text
 
 from ollaAgent.config_loader import build_system_prompt, load_config
 from ollaAgent.memory import SESSION_DIR, SessionMemory, save_session
@@ -411,7 +410,7 @@ def stream_response(stream: Any) -> tuple[str, str, dict[int, dict], int]:
     accumulated_tool_calls: dict[int, dict] = {}
     prompt_eval_count: int = 0
 
-    with Live(console=console, auto_refresh=False, transient=True) as live:
+    with Live(console=console, auto_refresh=False) as live:
         for chunk in stream:
             msg = chunk.get("message") or {}
             thinking = msg.get("thinking") or ""
@@ -420,16 +419,12 @@ def stream_response(stream: Any) -> tuple[str, str, dict[int, dict], int]:
             content = msg.get("content") or ""
             if content:
                 assistant_content += content
-                live.update(Text(assistant_content))
+                live.update(Markdown(assistant_content))
                 live.refresh()  # 매 chunk 즉시 출력
             _accumulate_tool_calls(msg, accumulated_tool_calls)
             # done=True 인 마지막 chunk에서 토큰 수 캡처
             if chunk.get("done"):
                 prompt_eval_count = chunk.get("prompt_eval_count") or 0
-
-    # 스트림 완료 후 Markdown으로 최종 렌더링 (가독성 확보)
-    if assistant_content:
-        console.print(Markdown(assistant_content))
 
     return (
         assistant_content,

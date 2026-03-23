@@ -7,6 +7,19 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ---
 
+## [0.2.0] - 2026-03-23
+
+### Fixed
+- 이중 출력 완전 해결 — `Live(auto_refresh=False)` + `live.refresh()` + `Markdown` 유지
+  - `Text` + 완료 후 Markdown 재출력 방식 폐기
+  - chunk마다 즉시 Markdown 갱신 → 실시간성 + 가독성 동시 확보
+
+### Removed
+- 불필요해진 `Text` import 제거
+- `transient=True` 관련 테스트 3종 제거
+
+---
+
 ## [0.1.9] - 2026-03-23
 
 ### Fixed
